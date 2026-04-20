@@ -52,7 +52,7 @@ export function MonthlyChart({ transactions }: Props) {
                 border: "1px solid oklch(0.3 0.025 255)",
                 borderRadius: 12,
               }}
-              formatter={(v: number) => formatCurrency(v)}
+              formatter={(v) => formatCurrency(Number(v))}
             />
             <Bar dataKey="credit" name="Credit" fill="oklch(0.78 0.17 165)" radius={[6, 6, 0, 0]} />
             <Bar dataKey="debit" name="Debit" fill="oklch(0.65 0.21 295)" radius={[6, 6, 0, 0]} />
@@ -101,7 +101,7 @@ export function CategoryPie({ transactions }: Props) {
                   border: "1px solid oklch(0.3 0.025 255)",
                   borderRadius: 12,
                 }}
-                formatter={(v: number) => formatCurrency(v)}
+                formatter={(v) => formatCurrency(Number(v))}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
             </PieChart>
