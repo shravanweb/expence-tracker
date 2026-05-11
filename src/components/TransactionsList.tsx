@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { Trash2, ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/categories";
 import { Button } from "@/components/ui/button";
 
@@ -21,13 +20,24 @@ type Props = {
 
 export function TransactionsList({ transactions, onChange }: Props) {
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("transactions").delete().eq("id", id);
-    if (error) {
+    try {
+      const token = localStorage.getItem("pulse_token");
+      const response = await fetch(`http://localhost:3001/api/transactions/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete transaction");
+      }
+
+      toast.success("Deleted");
+      onChange();
+    } catch (error: any) {
       toast.error(error.message);
-      return;
     }
-    toast.success("Deleted");
-    onChange();
   };
 
   if (transactions.length === 0) {

@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { LogOut, Wallet, TrendingUp, TrendingDown, Coins } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { AddTransactionDialog } from "@/components/AddTransactionDialog";
@@ -35,17 +34,25 @@ function Dashboard() {
 
   const load = async () => {
     if (!user) return;
-    const [{ data: tx }, { data: prof }] = await Promise.all([
-      supabase
-        .from("transactions")
-        .select("id, type, amount, category, description, transaction_date")
-        .order("transaction_date", { ascending: false })
-        .order("created_at", { ascending: false }),
-      supabase.from("profiles").select("full_name, avatar_url").eq("id", user.id).maybeSingle(),
-    ]);
-    setTransactions((tx ?? []) as Transaction[]);
-    setProfile(prof ?? null);
-    setLoading(false);
+    try {
+      const token = localStorage.getItem("pulse_token");
+      const response = await fetch("http://localhost:3001/api/transactions", {
+        mode: "cors",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setTransactions(data);
+      }
+      // Profile can be set from user state
+      setProfile({ full_name: user.fullName || null, avatar_url: null });
+    } catch (error) {
+      console.error("Failed to load transactions:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,23 +69,36 @@ export function AddTransactionDialog({ onAdded }: Props) {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("transactions").insert({
-      user_id: user.id,
-      type: parsed.data.type,
-      amount: parsed.data.amount,
-      category: parsed.data.category,
-      description: parsed.data.description ?? null,
-      transaction_date: parsed.data.transaction_date,
-    });
-    setLoading(false);
-    if (error) {
+    try {
+      const token = localStorage.getItem("pulse_token");
+      const response = await fetch("http://localhost:3001/api/transactions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: parsed.data.type,
+          amount: parsed.data.amount,
+          category: parsed.data.category,
+          description: parsed.data.description ?? null,
+          transaction_date: parsed.data.transaction_date,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save transaction");
+      }
+
+      toast.success("Transaction added");
+      reset();
+      setOpen(false);
+      onAdded();
+    } catch (error: any) {
       toast.error(error.message);
-      return;
+    } finally {
+      setLoading(false);
     }
-    toast.success("Transaction added");
-    reset();
-    setOpen(false);
-    onAdded();
   };
 
   return (

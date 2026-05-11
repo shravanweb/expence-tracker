@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Wallet, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,15 +31,35 @@ function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
+    try {
+      const response = await fetch("http://localhost:3001/api/login", {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid credentials");
+      }
+
+      console.log("Login successful:", data);
+      localStorage.setItem("pulse_token", data.token);
+      localStorage.setItem("pulse_user", JSON.stringify(data.user));
+      
+      toast.success("Welcome back!");
+      navigate({ to: "/dashboard" });
+      window.location.reload(); // Refresh to update auth state
+    } catch (error: any) {
+      console.error("Login error:", error);
       toast.error(error.message);
-      return;
+    } finally {
+      setLoading(false);
     }
-    toast.success("Welcome back!");
-    navigate({ to: "/dashboard" });
   };
+
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-hero">
