@@ -19,9 +19,10 @@ export type Transaction = {
 type Props = {
   transactions: Transaction[];
   onChange: () => void;
+  emptyMessage?: string;
 };
 
-export function TransactionsList({ transactions, onChange }: Props) {
+export function TransactionsList({ transactions, onChange, emptyMessage }: Props) {
   const { user } = useAuth();
 
   const handleDelete = async (id: string) => {
@@ -38,7 +39,9 @@ export function TransactionsList({ transactions, onChange }: Props) {
   if (transactions.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
-        <p className="text-sm text-muted-foreground">No transactions yet. Add your first one!</p>
+        <p className="text-sm text-muted-foreground">
+          {emptyMessage ?? "No transactions yet. Add your first one!"}
+        </p>
       </div>
     );
   }

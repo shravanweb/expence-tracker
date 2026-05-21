@@ -63,29 +63,36 @@ export function MonthlyChart({ transactions }: Props) {
   );
 }
 
-export function CategoryPie({ transactions }: Props) {
+type CategoryPieProps = Props & { monthKey?: string };
+
+export function CategoryPie({ transactions, monthKey }: CategoryPieProps) {
   const data = useMemo(() => {
-    const now = new Date();
-    const monthKey = format(now, "yyyy-MM");
+    const key = monthKey ?? format(new Date(), "yyyy-MM");
     const totals = new Map<string, number>();
     for (const t of transactions) {
       if (t.type !== "debit") continue;
       const k = format(parseISO(t.transaction_date), "yyyy-MM");
-      if (k !== monthKey) continue;
+      if (k !== key) continue;
       totals.set(t.category, (totals.get(t.category) ?? 0) + Number(t.amount));
     }
     return Array.from(totals.entries())
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
-  }, [transactions]);
+  }, [transactions, monthKey]);
+
+  const monthTitle = monthKey
+    ? format(new Date(`${monthKey}-01`), "MMMM yyyy")
+    : format(new Date(), "MMMM yyyy");
 
   return (
     <div className="rounded-2xl border border-border bg-gradient-card p-6 backdrop-blur-xl">
-      <h3 className="mb-4 text-sm font-semibold text-muted-foreground">This month — spending by category</h3>
+      <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
+        {monthTitle} — spending by category
+      </h3>
       <div className="h-72 w-full">
         {data.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            No expenses this month yet.
+            No expenses in this month yet.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

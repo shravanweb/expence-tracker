@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { format, parseISO } from "date-fns";
+import { format, startOfMonth } from "date-fns";
 import { toast } from "sonner";
 import { LogOut, TrendingUp, TrendingDown, Coins } from "lucide-react";
 import { AppLogo } from "@/components/AppLogo";
@@ -13,7 +13,9 @@ import { AddTransactionDialog } from "@/components/AddTransactionDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TransactionsList, type Transaction } from "@/components/TransactionsList";
 import { MonthlyChart, CategoryPie } from "@/components/Charts";
+import { MonthSelector } from "@/components/MonthSelector";
 import { formatCurrency } from "@/lib/categories";
+import { filterTransactionsByMonth, toMonthKey } from "@/lib/month-utils";
 import { fetchTransactions } from "@/lib/transactions-firestore";
 import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 
@@ -33,6 +35,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState(() => startOfMonth(new Date()));
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,19 +69,28 @@ function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  const monthTransactions = useMemo(
+    () => filterTransactionsByMonth(transactions, selectedMonth),
+    [transactions, selectedMonth],
+  );
+
+  const selectedMonthKey = toMonthKey(selectedMonth);
+  const selectedMonthLabel = format(selectedMonth, "MMMM yyyy");
+
   const stats = useMemo(() => {
-    const now = new Date();
-    const monthKey = format(now, "yyyy-MM");
-    let monthCredit = 0, monthDebit = 0, allCredit = 0, allDebit = 0;
+    let monthCredit = 0;
+    let monthDebit = 0;
+    let allCredit = 0;
+    let allDebit = 0;
     for (const t of transactions) {
       const amt = Number(t.amount);
       if (t.type === "credit") allCredit += amt;
       else allDebit += amt;
-      const k = format(parseISO(t.transaction_date), "yyyy-MM");
-      if (k === monthKey) {
-        if (t.type === "credit") monthCredit += amt;
-        else monthDebit += amt;
-      }
+    }
+    for (const t of monthTransactions) {
+      const amt = Number(t.amount);
+      if (t.type === "credit") monthCredit += amt;
+      else monthDebit += amt;
     }
     return {
       monthCredit,
@@ -86,7 +98,7 @@ function Dashboard() {
       monthBalance: monthCredit - monthDebit,
       totalBalance: allCredit - allDebit,
     };
-  }, [transactions]);
+  }, [transactions, monthTransactions]);
 
   const handleLogout = async () => {
     await signOut();
@@ -104,7 +116,6 @@ function Dashboard() {
   if (!isVerifiedUser(user)) return null;
 
   const displayName = profile?.full_name ?? user.fullName ?? user.email?.split("@")[0] ?? "there";
-  const monthLabel = format(new Date(), "MMMM yyyy");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -132,54 +143,70 @@ function Dashboard() {
             </div>
           </header>
 
-          <section className="mt-8 rounded-3xl border border-border/80 bg-gradient-card p-8 shadow-elegant ring-1 ring-primary/5 backdrop-blur-xl">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Balance</p>
-              <h1 className="mt-2 text-5xl font-bold tracking-tight">
-                {formatCurrency(stats.totalBalance)}
-              </h1>
-              <p className="mt-2 text-sm text-muted-foreground">{monthLabel} · {transactions.length} total transactions</p>
+          <MonthSelector
+            className="mt-6"
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            transactions={transactions}
+          />
+
+          <section className="mt-6 rounded-3xl border border-border/80 bg-gradient-card p-8 shadow-elegant ring-1 ring-primary/5 backdrop-blur-xl">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  All-time balance
+                </p>
+                <h1 className="mt-2 text-5xl font-bold tracking-tight">
+                  {formatCurrency(stats.totalBalance)}
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {selectedMonthLabel} · {monthTransactions.length} transaction
+                  {monthTransactions.length === 1 ? "" : "s"} this month
+                </p>
+              </div>
+              <AddTransactionDialog onAdded={load} />
             </div>
-            <AddTransactionDialog onAdded={load} />
-          </div>
-        </section>
+          </section>
 
           <section className="mt-6 grid gap-4 sm:grid-cols-3">
-          <StatCard
-            label="Credited this month"
-            value={formatCurrency(stats.monthCredit)}
-            icon={<TrendingUp className="h-5 w-5 text-primary" />}
-            tone="primary"
-          />
-          <StatCard
-            label="Debited this month"
-            value={formatCurrency(stats.monthDebit)}
-            icon={<TrendingDown className="h-5 w-5 text-destructive" />}
-            tone="destructive"
-          />
-          <StatCard
-            label="Net this month"
-            value={formatCurrency(stats.monthBalance)}
-            icon={<Coins className="h-5 w-5 text-accent" />}
-            tone="accent"
-          />
-        </section>
+            <StatCard
+              label={`Credited · ${selectedMonthLabel}`}
+              value={formatCurrency(stats.monthCredit)}
+              icon={<TrendingUp className="h-5 w-5 text-primary" />}
+              tone="primary"
+            />
+            <StatCard
+              label={`Debited · ${selectedMonthLabel}`}
+              value={formatCurrency(stats.monthDebit)}
+              icon={<TrendingDown className="h-5 w-5 text-destructive" />}
+              tone="destructive"
+            />
+            <StatCard
+              label={`Net · ${selectedMonthLabel}`}
+              value={formatCurrency(stats.monthBalance)}
+              icon={<Coins className="h-5 w-5 text-accent" />}
+              tone="accent"
+            />
+          </section>
 
           <section className="mt-6 grid gap-4 lg:grid-cols-2">
-          <MonthlyChart transactions={transactions} />
-          <CategoryPie transactions={transactions} />
-        </section>
+            <MonthlyChart transactions={transactions} />
+            <CategoryPie transactions={transactions} monthKey={selectedMonthKey} />
+          </section>
 
           <section className="mt-6 pb-8">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight">Recent transactions</h2>
-                <p className="text-sm text-muted-foreground">Your latest financial activity</p>
+                <h2 className="text-lg font-semibold tracking-tight">{selectedMonthLabel} transactions</h2>
+                <p className="text-sm text-muted-foreground">
+                  Income and expenses for the selected month
+                </p>
               </div>
-              <p className="text-sm font-medium text-muted-foreground">{transactions.length} total</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                {monthTransactions.length} in month · {transactions.length} all time
+              </p>
             </div>
-            <TransactionsList transactions={transactions} onChange={load} />
+            <TransactionsList transactions={monthTransactions} onChange={load} emptyMessage={`No transactions in ${selectedMonthLabel}.`} />
           </section>
         </div>
       </div>
