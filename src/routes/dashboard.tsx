@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
+import { toast } from "sonner";
 import { LogOut, Wallet, TrendingUp, TrendingDown, Coins } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import { AddTransactionDialog } from "@/components/AddTransactionDialog";
 import { TransactionsList, type Transaction } from "@/components/TransactionsList";
 import { MonthlyChart, CategoryPie } from "@/components/Charts";
 import { formatCurrency } from "@/lib/categories";
+import { fetchTransactions } from "@/lib/transactions-firestore";
+import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -35,21 +38,12 @@ function Dashboard() {
   const load = async () => {
     if (!user) return;
     try {
-      const token = localStorage.getItem("pulse_token");
-      const response = await fetch("http://localhost:3001/api/transactions", {
-        mode: "cors",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setTransactions(data);
-      }
-      // Profile can be set from user state
+      const data = await fetchTransactions(user.id);
+      setTransactions(data);
       setProfile({ full_name: user.fullName || null, avatar_url: null });
     } catch (error) {
       console.error("Failed to load transactions:", error);
+      toast.error(getFirebaseErrorMessage(error, "Failed to load transactions"));
     } finally {
       setLoading(false);
     }
@@ -97,7 +91,7 @@ function Dashboard() {
 
   if (!user) return null;
 
-  const displayName = profile?.full_name ?? user.email?.split("@")[0] ?? "there";
+  const displayName = profile?.full_name ?? user.fullName ?? user.email?.split("@")[0] ?? "there";
   const monthLabel = format(new Date(), "MMMM yyyy");
 
   return (

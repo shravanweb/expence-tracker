@@ -1,8 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { toast } from "sonner";
 import { Wallet, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { auth } from "@/lib/firebase";
+import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -32,34 +35,19 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3001/api/login", {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid credentials");
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      if (!credential.user.emailVerified) {
+        await signOut(auth);
+        throw new Error("Please verify your email first. Check your inbox for the link.");
       }
-
-      console.log("Login successful:", data);
-      localStorage.setItem("pulse_token", data.token);
-      localStorage.setItem("pulse_user", JSON.stringify(data.user));
-      
       toast.success("Welcome back!");
       navigate({ to: "/dashboard" });
-      window.location.reload(); // Refresh to update auth state
-    } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(getFirebaseErrorMessage(error, "Invalid credentials"));
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-hero">

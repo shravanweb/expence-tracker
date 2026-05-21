@@ -1,9 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Wallet, ArrowRight, MailCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { auth } from "@/lib/firebase";
+import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -44,26 +52,20 @@ function SignupPage() {
       toast.error(parsed.error.issues[0].message);
       return;
     }
+    setLoading(true);
     try {
-      const response = await fetch("http://localhost:3001/api/signup", {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Something went wrong");
-      }
-
-      console.log("Signup successful:", data);
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        parsed.data.email,
+        parsed.data.password,
+      );
+      await updateProfile(credential.user, { displayName: parsed.data.fullName });
+      await sendEmailVerification(credential.user);
+      await signOut(auth);
       setEmailSent(true);
-      toast.success("Account created successfully!");
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      toast.error(error.message);
+      toast.success("Account created! Check your email to verify.");
+    } catch (error: unknown) {
+      toast.error(getFirebaseErrorMessage(error));
     } finally {
       setLoading(false);
     }

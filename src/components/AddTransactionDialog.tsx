@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CREDIT_CATEGORIES, DEBIT_CATEGORIES } from "@/lib/categories";
+import { addTransaction } from "@/lib/transactions-firestore";
+import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 
 const schema = z.object({
   type: z.enum(["credit", "debit"]),
@@ -70,32 +72,20 @@ export function AddTransactionDialog({ onAdded }: Props) {
     }
     setLoading(true);
     try {
-      const token = localStorage.getItem("pulse_token");
-      const response = await fetch("http://localhost:3001/api/transactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          type: parsed.data.type,
-          amount: parsed.data.amount,
-          category: parsed.data.category,
-          description: parsed.data.description ?? null,
-          transaction_date: parsed.data.transaction_date,
-        }),
+      await addTransaction(user.id, {
+        type: parsed.data.type,
+        amount: parsed.data.amount,
+        category: parsed.data.category,
+        description: parsed.data.description ?? null,
+        transaction_date: parsed.data.transaction_date,
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to save transaction");
-      }
 
       toast.success("Transaction added");
       reset();
       setOpen(false);
       onAdded();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(getFirebaseErrorMessage(error, "Failed to save transaction"));
     } finally {
       setLoading(false);
     }

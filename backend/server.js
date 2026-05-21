@@ -7,7 +7,11 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-  origin: '*',
+  origin: [
+    'http://localhost:5000',
+    'http://localhost:5001',
+    process.env.FRONTEND_URL || 'https://shravanweb-expence-tracker.vercel.app'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -97,7 +101,7 @@ app.post('/api/signup', async (req, res) => {
   users.push(newUser);
 
   // Send Verification Email
-  const verificationLink = `http://localhost:3001/api/verify?token=${verificationToken}`;
+  const verificationLink = `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/verify?token=${verificationToken}`;
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,

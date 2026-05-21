@@ -3,6 +3,9 @@ import { Trash2, ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/categories";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { removeTransaction } from "@/lib/transactions-firestore";
+import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 
 export type Transaction = {
   id: string;
@@ -19,24 +22,16 @@ type Props = {
 };
 
 export function TransactionsList({ transactions, onChange }: Props) {
+  const { user } = useAuth();
+
   const handleDelete = async (id: string) => {
+    if (!user) return;
     try {
-      const token = localStorage.getItem("pulse_token");
-      const response = await fetch(`http://localhost:3001/api/transactions/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete transaction");
-      }
-
+      await removeTransaction(user.id, id);
       toast.success("Deleted");
       onChange();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(getFirebaseErrorMessage(error, "Failed to delete transaction"));
     }
   };
 
