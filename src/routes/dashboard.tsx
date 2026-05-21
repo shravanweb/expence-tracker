@@ -2,10 +2,15 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
-import { LogOut, Wallet, TrendingUp, TrendingDown, Coins } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { LogOut, TrendingUp, TrendingDown, Coins } from "lucide-react";
+import { AppLogo } from "@/components/AppLogo";
+import { SiteFooter } from "@/components/SiteFooter";
+import { isVerifiedUser, useAuth } from "@/hooks/useAuth";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { AddTransactionDialog } from "@/components/AddTransactionDialog";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { TransactionsList, type Transaction } from "@/components/TransactionsList";
 import { MonthlyChart, CategoryPie } from "@/components/Charts";
 import { formatCurrency } from "@/lib/categories";
@@ -15,7 +20,7 @@ import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Pulse" },
+      { title: "Dashboard — Expense - Tracker" },
       { name: "description", content: "Your money at a glance." },
     ],
   }),
@@ -32,11 +37,18 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) navigate({ to: "/login" });
+    if (authLoading) return;
+    if (!user || !isVerifiedUser(user)) {
+      if (user && !user.emailVerified) {
+        void signOut(auth);
+        toast.error("Please verify your email before accessing the dashboard.");
+      }
+      navigate({ to: "/login" });
+    }
   }, [user, authLoading, navigate]);
 
   const load = async () => {
-    if (!user) return;
+    if (!isVerifiedUser(user)) return;
     try {
       const data = await fetchTransactions(user.id);
       setTransactions(data);
@@ -50,7 +62,7 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    if (user) load();
+    if (isVerifiedUser(user)) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -89,36 +101,38 @@ function Dashboard() {
     );
   }
 
-  if (!user) return null;
+  if (!isVerifiedUser(user)) return null;
 
   const displayName = profile?.full_name ?? user.fullName ?? user.email?.split("@")[0] ?? "there";
   const monthLabel = format(new Date(), "MMMM yyyy");
 
   return (
-    <div className="relative min-h-screen bg-background">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-gradient-hero opacity-60" />
+    <div className="flex min-h-screen flex-col bg-background">
+      <div className="relative flex-1">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[28rem] bg-gradient-hero opacity-70" />
+        <div className="pointer-events-none absolute inset-0 bg-grid-subtle opacity-30" />
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        {/* Header */}
-        <header className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
-              <Wallet className="h-4 w-4 text-primary-foreground" />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:px-6">
+          <header className="flex items-center justify-between rounded-2xl border border-border/60 bg-card/40 px-4 py-3 shadow-soft backdrop-blur-xl sm:px-5">
+            <AppLogo />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <ThemeToggle />
+              <span className="hidden text-sm text-muted-foreground md:inline">
+                Welcome, <span className="font-medium text-foreground">{displayName}</span>
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
-            <span className="font-display text-xl font-bold tracking-tight">Pulse</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-muted-foreground sm:inline">
-              Hey, <span className="font-medium text-foreground">{displayName}</span>
-            </span>
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </header>
+          </header>
 
-        {/* Hero balance */}
-        <section className="mt-8 rounded-3xl border border-border bg-gradient-card p-8 shadow-elegant backdrop-blur-xl">
+          <section className="mt-8 rounded-3xl border border-border/80 bg-gradient-card p-8 shadow-elegant ring-1 ring-primary/5 backdrop-blur-xl">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Balance</p>
@@ -131,8 +145,7 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Stat cards */}
-        <section className="mt-6 grid gap-4 sm:grid-cols-3">
+          <section className="mt-6 grid gap-4 sm:grid-cols-3">
           <StatCard
             label="Credited this month"
             value={formatCurrency(stats.monthCredit)}
@@ -153,21 +166,25 @@ function Dashboard() {
           />
         </section>
 
-        {/* Charts */}
-        <section className="mt-6 grid gap-4 lg:grid-cols-2">
+          <section className="mt-6 grid gap-4 lg:grid-cols-2">
           <MonthlyChart transactions={transactions} />
           <CategoryPie transactions={transactions} />
         </section>
 
-        {/* Transactions */}
-        <section className="mt-6 mb-12">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Recent transactions</h2>
-            <p className="text-sm text-muted-foreground">{transactions.length} total</p>
-          </div>
-          <TransactionsList transactions={transactions} onChange={load} />
-        </section>
+          <section className="mt-6 pb-8">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight">Recent transactions</h2>
+                <p className="text-sm text-muted-foreground">Your latest financial activity</p>
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">{transactions.length} total</p>
+            </div>
+            <TransactionsList transactions={transactions} onChange={load} />
+          </section>
+        </div>
       </div>
+
+      <SiteFooter compact />
     </div>
   );
 }
@@ -189,7 +206,7 @@ function StatCard({
     accent: "bg-accent/10",
   }[tone];
   return (
-    <div className="rounded-2xl border border-border bg-gradient-card p-5 backdrop-blur-xl transition-smooth hover:shadow-soft">
+    <div className="rounded-2xl border border-border/80 bg-gradient-card p-5 shadow-soft backdrop-blur-xl transition-smooth hover:border-primary/20 hover:shadow-glow">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
         <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${ring}`}>{icon}</div>

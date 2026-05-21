@@ -6,7 +6,12 @@ export type AppUser = {
   id: string;
   fullName: string | null;
   email: string | null;
+  emailVerified: boolean;
 };
+
+export function isVerifiedUser(user: AppUser | null): user is AppUser {
+  return user !== null && user.emailVerified;
+}
 
 type AuthContextValue = {
   session: null;
@@ -22,6 +27,7 @@ function toAppUser(fbUser: FirebaseUser): AppUser {
     id: fbUser.uid,
     fullName: fbUser.displayName,
     email: fbUser.email,
+    emailVerified: fbUser.emailVerified,
   };
 }
 

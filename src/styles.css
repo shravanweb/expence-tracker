@@ -59,10 +59,66 @@
   src: url("https://fonts.gstatic.com/s/spacegrotesk/v16/V8mDoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUUxjLA.woff2") format("woff2");
 }
 
-/* Dark fintech theme — premium teal/emerald with violet accents */
+/* Light theme — clean fintech */
 :root {
   --radius: 0.875rem;
 
+  --background: oklch(0.98 0.008 250);
+  --foreground: oklch(0.22 0.03 250);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 250);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 250);
+
+  --primary: oklch(0.52 0.17 165);
+  --primary-foreground: oklch(0.99 0.01 250);
+  --primary-glow: oklch(0.58 0.18 175);
+
+  --secondary: oklch(0.94 0.015 250);
+  --secondary-foreground: oklch(0.28 0.03 250);
+
+  --muted: oklch(0.94 0.012 250);
+  --muted-foreground: oklch(0.5 0.03 255);
+
+  --accent: oklch(0.55 0.21 295);
+  --accent-foreground: oklch(0.99 0.01 250);
+
+  --destructive: oklch(0.55 0.22 22);
+  --destructive-foreground: oklch(0.99 0.01 250);
+
+  --success: oklch(0.52 0.17 165);
+  --success-foreground: oklch(0.99 0.01 250);
+
+  --warning: oklch(0.65 0.17 80);
+  --warning-foreground: oklch(0.22 0.04 80);
+
+  --border: oklch(0.9 0.015 250);
+  --input: oklch(0.92 0.012 250);
+  --ring: oklch(0.52 0.17 165);
+
+  --chart-1: oklch(0.52 0.17 165);
+  --chart-2: oklch(0.55 0.21 295);
+  --chart-3: oklch(0.65 0.17 80);
+  --chart-4: oklch(0.58 0.18 30);
+  --chart-5: oklch(0.55 0.16 220);
+
+  --gradient-primary: linear-gradient(135deg, oklch(0.52 0.17 165), oklch(0.55 0.21 295));
+  --gradient-card: linear-gradient(135deg, oklch(1 0 0 / 0.95), oklch(0.97 0.01 250 / 0.95));
+  --gradient-hero: radial-gradient(ellipse at top, oklch(0.52 0.17 165 / 0.12), transparent 60%),
+                   radial-gradient(ellipse at bottom right, oklch(0.55 0.21 295 / 0.1), transparent 60%);
+  --gradient-glow: radial-gradient(circle at center, oklch(0.52 0.17 165 / 0.2), transparent 70%);
+
+  --shadow-soft: 0 4px 20px -6px oklch(0.2 0.02 250 / 0.12);
+  --shadow-glow: 0 10px 40px -10px oklch(0.52 0.17 165 / 0.25);
+  --shadow-elegant: 0 20px 60px -20px oklch(0.2 0.02 250 / 0.15);
+
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark fintech theme — premium teal/emerald with violet accents */
+.dark {
   --background: oklch(0.16 0.02 250);
   --foreground: oklch(0.97 0.01 250);
 
@@ -104,7 +160,6 @@
   --chart-4: oklch(0.7 0.18 30);
   --chart-5: oklch(0.7 0.16 220);
 
-  /* Gradients & shadows */
   --gradient-primary: linear-gradient(135deg, oklch(0.78 0.17 165), oklch(0.65 0.21 295));
   --gradient-card: linear-gradient(135deg, oklch(0.23 0.03 250 / 0.9), oklch(0.19 0.025 250 / 0.9));
   --gradient-hero: radial-gradient(ellipse at top, oklch(0.78 0.17 165 / 0.18), transparent 60%),
@@ -114,12 +169,13 @@
   --shadow-soft: 0 4px 20px -6px oklch(0 0 0 / 0.4);
   --shadow-glow: 0 10px 40px -10px oklch(0.78 0.17 165 / 0.5);
   --shadow-elegant: 0 20px 60px -20px oklch(0 0 0 / 0.6);
-
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Force dark mode by default — fintech vibe */
 html {
+  color-scheme: light;
+}
+
+html.dark {
   color-scheme: dark;
 }
 
@@ -155,5 +211,12 @@ html {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  .bg-grid-subtle {
+    background-image:
+      linear-gradient(to right, color-mix(in oklch, var(--border) 35%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklch, var(--border) 35%, transparent) 1px, transparent 1px);
+    background-size: 3.5rem 3.5rem;
   }
 }

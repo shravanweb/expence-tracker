@@ -45,7 +45,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 app.get('/', (req, res) => {
-  res.send('Pulse Expense Tracker Backend is running!');
+  res.send('Expense - Tracker Backend is running!');
 });
 
 // TRANSACTIONS ROUTES
@@ -105,9 +105,9 @@ app.post('/api/signup', async (req, res) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Confirm Your Email - Pulse',
+    subject: 'Confirm Your Email - Expense - Tracker',
     html: `
-      <h1>Welcome to Pulse, ${fullName}!</h1>
+      <h1>Welcome to Expense - Tracker, ${fullName}!</h1>
       <p>Please click the link below to confirm your email and activate your account:</p>
       <a href="${verificationLink}" style="padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px;">Confirm Email</a>
       <p>If the button doesn't work, copy this link: ${verificationLink}</p>
