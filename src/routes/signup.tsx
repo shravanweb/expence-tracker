@@ -17,14 +17,16 @@ import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { buildPageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({
-    meta: [
-      { title: "Sign up — Expense - Tracker" },
-      { name: "description", content: "Create your free money tracking account." },
-    ],
-  }),
+  head: () =>
+    buildPageHead({
+      title: "Free Sign Up — Start Tracking Expenses",
+      description:
+        "Create a free Expense - Tracker account. Track monthly salary, spending, income, and balance in India.",
+      path: "/signup",
+    }),
   component: SignupPage,
 });
 

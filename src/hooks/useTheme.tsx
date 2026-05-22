@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 
 export type Theme = "light" | "dark";
 
-const STORAGE_KEY = "pulse_theme";
+const STORAGE_KEY = "Expense-tracker_theme";
 
 function getStoredTheme(): Theme {
   if (typeof window === "undefined") return "dark";

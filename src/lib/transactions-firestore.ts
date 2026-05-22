@@ -7,7 +7,9 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  writeBatch,
 } from "firebase/firestore";
+import type { ImportRow } from "@/lib/transaction-io";
 import type { Transaction } from "@/components/TransactionsList";
 import { db } from "@/lib/firebase";
 
@@ -43,4 +45,32 @@ export async function addTransaction(
 
 export async function removeTransaction(userId: string, transactionId: string): Promise<void> {
   await deleteDoc(doc(db, "users", userId, "transactions", transactionId));
+}
+
+const IMPORT_BATCH_SIZE = 400;
+
+export async function importTransactions(userId: string, rows: ImportRow[]): Promise<number> {
+  let imported = 0;
+
+  for (let i = 0; i < rows.length; i += IMPORT_BATCH_SIZE) {
+    const chunk = rows.slice(i, i + IMPORT_BATCH_SIZE);
+    const batch = writeBatch(db);
+
+    for (const row of chunk) {
+      const ref = doc(transactionsRef(userId));
+      batch.set(ref, {
+        type: row.type,
+        amount: row.amount,
+        category: row.category,
+        description: row.description ?? null,
+        transaction_date: row.transaction_date,
+        created_at: serverTimestamp(),
+      });
+    }
+
+    await batch.commit();
+    imported += chunk.length;
+  }
+
+  return imported;
 }

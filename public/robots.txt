@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+
+Sitemap: https://shravanweb-expence-tracker.vercel.app/sitemap.xml

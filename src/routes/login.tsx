@@ -11,14 +11,15 @@ import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { buildPageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({
-    meta: [
-      { title: "Login — Expense - Tracker" },
-      { name: "description", content: "Sign in to your money tracker." },
-    ],
-  }),
+  head: () =>
+    buildPageHead({
+      title: "Sign In",
+      description: "Sign in to Expense - Tracker — your personal expense and money tracker dashboard.",
+      path: "/login",
+    }),
   component: LoginPage,
 });
 

@@ -4,9 +4,11 @@ import { AppLogo } from "@/components/AppLogo";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider, useTheme } from "@/hooks/useTheme";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { buildPageHead, SITE_NAME } from "@/lib/seo";
 import appCss from "../styles.css?url";
 
-const themeInitScript = `(function(){try{var t=localStorage.getItem("pulse_theme");var d=t!=="light";document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){document.documentElement.classList.add("dark");}})();`;
+const themeInitScript = `(function(){try{var t=localStorage.getItem("Expense-tracker_theme");var d=t!=="light";document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){document.documentElement.classList.add("dark");}})();`;
 
 function NotFoundComponent() {
   return (
@@ -35,10 +37,17 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Expense - Tracker — Personal Money Tracker" },
-      { name: "description", content: "Track salary, credits, debits and balance with a beautiful, fast personal finance dashboard." },
+      ...buildPageHead({
+        title: `${SITE_NAME} — Free Personal Finance & Expense Tracker`,
+        description:
+          "Track monthly salary, expenses, income, and balance. Free expense tracker with charts, categories, and previous month history.",
+        path: "/",
+      }).meta,
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      ...buildPageHead({ title: SITE_NAME, path: "/" }).links,
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -69,6 +78,7 @@ function RootComponent() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <GoogleAnalytics />
         <Outlet />
         <ThemedToaster />
       </AuthProvider>

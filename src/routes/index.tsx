@@ -4,20 +4,24 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LandingJsonLd } from "@/components/SeoJsonLd";
+import { buildPageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Expense - Tracker — Track every rupee with clarity" },
-      { name: "description", content: "A beautiful, fast money tracker for monthly salary, credits, debits and balance." },
-    ],
-  }),
+  head: () =>
+    buildPageHead({
+      title: "Free Expense Tracker — Track Salary, Spending & Monthly Balance",
+      description:
+        "Expense - Tracker helps you manage personal finance in India. Track salary, monthly expenses, credits, debits, and view previous months. Free signup.",
+      path: "/",
+    }),
   component: Landing,
 });
 
 function Landing() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <LandingJsonLd />
       <div className="relative flex-1 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero" />
         <div className="absolute inset-0 bg-grid-subtle opacity-50" />
@@ -52,8 +56,9 @@ function Landing() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Expense - Tracker helps you monitor salary, credits, debits, and monthly balance in one secure,
-            beautifully designed dashboard built for modern earners.
+            The best free <strong className="font-medium text-foreground">expense tracker</strong> and{" "}
+            <strong className="font-medium text-foreground">money tracker app</strong> for monthly salary,
+            spending, and balance — with charts, categories, and previous month history.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -115,6 +120,36 @@ function Landing() {
               </div>
             ))}
           </div>
+
+          <section className="mt-24 max-w-3xl mx-auto text-left" aria-labelledby="faq-heading">
+            <h2 id="faq-heading" className="text-2xl font-bold tracking-tight text-center sm:text-3xl">
+              Frequently asked questions
+            </h2>
+            <div className="mt-8 space-y-4">
+              {[
+                {
+                  q: "Is Expense - Tracker free?",
+                  a: "Yes. Create a free account and track your monthly income, expenses, and balance online.",
+                },
+                {
+                  q: "Can I track previous months?",
+                  a: "Yes. Use the month selector on your dashboard to view credits, debits, and transactions from any past month.",
+                },
+                {
+                  q: "Is my financial data secure?",
+                  a: "Yes. We use Firebase Authentication and Firestore security rules so only you can access your data.",
+                },
+              ].map((item) => (
+                <article
+                  key={item.q}
+                  className="rounded-xl border border-border/80 bg-card/50 p-5 backdrop-blur-md"
+                >
+                  <h3 className="font-semibold text-foreground">{item.q}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
+                </article>
+              ))}
+            </div>
+          </section>
         </main>
       </div>
 

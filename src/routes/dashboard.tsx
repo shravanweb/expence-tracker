@@ -14,18 +14,21 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { TransactionsList, type Transaction } from "@/components/TransactionsList";
 import { MonthlyChart, CategoryPie } from "@/components/Charts";
 import { MonthSelector } from "@/components/MonthSelector";
+import { TransactionDataActions } from "@/components/TransactionDataActions";
 import { formatCurrency } from "@/lib/categories";
 import { filterTransactionsByMonth, toMonthKey } from "@/lib/month-utils";
 import { fetchTransactions } from "@/lib/transactions-firestore";
 import { getFirebaseErrorMessage } from "@/lib/firebase-errors";
+import { buildPageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({
-    meta: [
-      { title: "Dashboard — Expense - Tracker" },
-      { name: "description", content: "Your money at a glance." },
-    ],
-  }),
+  head: () =>
+    buildPageHead({
+      title: "Dashboard",
+      description: "Your personal finance dashboard.",
+      path: "/dashboard",
+      noIndex: true,
+    }),
   component: Dashboard,
 });
 
@@ -108,7 +111,7 @@ function Dashboard() {
   if (authLoading || (loading && user)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-pulse rounded-full bg-gradient-primary shadow-glow" />
+        <div className="h-10 w-10 animate-Expense-tracker rounded-full bg-gradient-primary shadow-glow" />
       </div>
     );
   }
@@ -195,16 +198,28 @@ function Dashboard() {
           </section>
 
           <section className="mt-6 pb-8">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold tracking-tight">{selectedMonthLabel} transactions</h2>
                 <p className="text-sm text-muted-foreground">
                   Income and expenses for the selected month
                 </p>
               </div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {monthTransactions.length} in month · {transactions.length} all time
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {monthTransactions.length} in month · {transactions.length} all time
+                </p>
+                <TransactionDataActions
+                  monthLabel={selectedMonthLabel}
+                  monthTransactions={monthTransactions}
+                  monthStats={{
+                    credit: stats.monthCredit,
+                    debit: stats.monthDebit,
+                    net: stats.monthBalance,
+                  }}
+                  onDataChange={load}
+                />
+              </div>
             </div>
             <TransactionsList transactions={monthTransactions} onChange={load} emptyMessage={`No transactions in ${selectedMonthLabel}.`} />
           </section>

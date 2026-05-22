@@ -31,12 +31,12 @@ export function MonthSelector({ selectedMonth, onMonthChange, transactions, clas
         className,
       )}
     >
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
         <Calendar className="h-4 w-4 shrink-0 text-primary" />
         <span>Viewing monthly report</span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex shrink-0 flex-nowrap items-center gap-2">
         <Button
           type="button"
           variant="outline"
@@ -53,7 +53,7 @@ export function MonthSelector({ selectedMonth, onMonthChange, transactions, clas
           const found = availableMonths.find((m) => format(m, "yyyy-MM") === v);
           if (found) onMonthChange(found);
         }}>
-          <SelectTrigger className="h-9 min-w-[10rem] border-border/80 bg-background/50 font-medium sm:min-w-[11rem]">
+          <SelectTrigger className="h-9 w-auto min-w-[10rem] border-border/80 bg-background/50 font-medium sm:min-w-[11rem]">
             <SelectValue>{format(selectedMonth, "MMMM yyyy")}</SelectValue>
           </SelectTrigger>
           <SelectContent>
