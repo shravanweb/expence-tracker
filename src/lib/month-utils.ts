@@ -1,13 +1,21 @@
 import { format, parseISO, startOfMonth, isSameMonth, subMonths } from "date-fns";
 import type { Transaction } from "@/components/TransactionsList";
 
+/** Use the date string prefix when stored as YYYY-MM-DD to avoid timezone month shifts. */
+export function getTransactionMonthKey(transactionDate: string): string {
+  if (/^\d{4}-\d{2}-\d{2}/.test(transactionDate)) {
+    return transactionDate.slice(0, 7);
+  }
+  return format(parseISO(transactionDate), "yyyy-MM");
+}
+
 export function toMonthKey(date: Date): string {
   return format(startOfMonth(date), "yyyy-MM");
 }
 
 export function filterTransactionsByMonth(transactions: Transaction[], month: Date): Transaction[] {
   const key = toMonthKey(month);
-  return transactions.filter((t) => format(parseISO(t.transaction_date), "yyyy-MM") === key);
+  return transactions.filter((t) => getTransactionMonthKey(t.transaction_date) === key);
 }
 
 export function getEarliestTransactionMonth(transactions: Transaction[]): Date {

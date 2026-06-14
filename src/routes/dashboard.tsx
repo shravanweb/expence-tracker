@@ -111,7 +111,7 @@ function Dashboard() {
   if (authLoading || (loading && user)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-Expense-tracker rounded-full bg-gradient-primary shadow-glow" />
+        <div className="h-10 w-10 animate-pulse rounded-full bg-gradient-primary shadow-glow" />
       </div>
     );
   }
@@ -157,14 +157,15 @@ function Dashboard() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  All-time balance
+                  {selectedMonthLabel} balance
                 </p>
                 <h1 className="mt-2 text-5xl font-bold tracking-tight">
-                  {formatCurrency(stats.totalBalance)}
+                  {formatCurrency(stats.monthBalance)}
                 </h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {selectedMonthLabel} · {monthTransactions.length} transaction
-                  {monthTransactions.length === 1 ? "" : "s"} this month
+                  {monthTransactions.length} transaction
+                  {monthTransactions.length === 1 ? "" : "s"} this month · All-time{" "}
+                  {formatCurrency(stats.totalBalance)}
                 </p>
               </div>
               <AddTransactionDialog onAdded={load} />

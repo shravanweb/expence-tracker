@@ -3,6 +3,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { format, parseISO, startOfMonth, subMonths } from "date-fns";
 import type { Transaction } from "./TransactionsList";
 import { formatCurrency } from "@/lib/categories";
+import { getTransactionMonthKey } from "@/lib/month-utils";
 
 type Props = { transactions: Transaction[] };
 
@@ -26,7 +27,7 @@ export function MonthlyChart({ transactions }: Props) {
     }
     const map = new Map(months.map((m) => [m.key, m]));
     for (const t of transactions) {
-      const k = format(parseISO(t.transaction_date), "yyyy-MM");
+      const k = getTransactionMonthKey(t.transaction_date);
       const slot = map.get(k);
       if (slot) {
         if (t.type === "credit") slot.credit += Number(t.amount);
@@ -71,7 +72,7 @@ export function CategoryPie({ transactions, monthKey }: CategoryPieProps) {
     const totals = new Map<string, number>();
     for (const t of transactions) {
       if (t.type !== "debit") continue;
-      const k = format(parseISO(t.transaction_date), "yyyy-MM");
+      const k = getTransactionMonthKey(t.transaction_date);
       if (k !== key) continue;
       totals.set(t.category, (totals.get(t.category) ?? 0) + Number(t.amount));
     }

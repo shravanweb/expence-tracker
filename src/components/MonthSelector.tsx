@@ -1,4 +1,4 @@
-import { addMonths, format, subMonths } from "date-fns";
+import { addMonths, format, startOfMonth, subMonths } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,7 +84,7 @@ export function MonthSelector({ selectedMonth, onMonthChange, transactions, clas
             variant="ghost"
             size="sm"
             className="h-9 text-xs text-primary"
-            onClick={() => onMonthChange(new Date())}
+            onClick={() => onMonthChange(startOfMonth(new Date()))}
           >
             Current month
           </Button>
