@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LandingJsonLd } from "@/components/SeoJsonLd";
+import { trackCtaClick } from "@/lib/analytics";
 import { buildPageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
@@ -32,11 +33,12 @@ function Landing() {
           <ThemeToggle />
           <Link
             to="/login"
-            className="hidden text-sm font-medium text-muted-foreground transition-smooth hover:text-foreground sm:inline"
+            onClick={() => trackCtaClick("login", "header")}
+            className="text-sm font-medium text-muted-foreground transition-smooth hover:text-foreground"
           >
             Sign in
           </Link>
-          <Link to="/signup">
+          <Link to="/signup" onClick={() => trackCtaClick("signup", "header")}>
             <Button className="bg-gradient-primary text-primary-foreground shadow-glow transition-smooth hover:opacity-90">
               Get started
             </Button>
@@ -62,7 +64,7 @@ function Landing() {
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link to="/signup">
+            <Link to="/signup" onClick={() => trackCtaClick("signup", "hero")}>
               <Button
                 size="lg"
                 className="h-12 min-w-[200px] bg-gradient-primary text-primary-foreground shadow-glow transition-smooth hover:opacity-90"
@@ -70,12 +72,22 @@ function Landing() {
                 Create free account <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/login" onClick={() => trackCtaClick("login", "hero")}>
               <Button size="lg" variant="outline" className="h-12 min-w-[200px] border-border/80 bg-card/50 backdrop-blur-md">
                 Sign in to dashboard
               </Button>
             </Link>
           </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Free forever · No credit card ·{" "}
+            <Link
+              to="/signup"
+              onClick={() => trackCtaClick("signup", "hero")}
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Start in 60 seconds
+            </Link>
+          </p>
 
           <div className="mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-4 rounded-2xl border border-border/80 bg-card/40 p-6 shadow-soft backdrop-blur-xl sm:gap-8">
             {[
@@ -117,6 +129,13 @@ function Landing() {
                 </div>
                 <h3 className="mt-5 text-lg font-semibold tracking-tight">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+                <Link
+                  to="/signup"
+                  onClick={() => trackCtaClick("signup", "feature_card")}
+                  className="mt-4 inline-flex items-center text-sm font-medium text-primary transition-smooth hover:underline"
+                >
+                  Try it free <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                </Link>
               </div>
             ))}
           </div>
@@ -148,6 +167,38 @@ function Landing() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
                 </article>
               ))}
+            </div>
+          </section>
+
+          <section
+            className="mt-24 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card/60 to-card/40 p-8 text-center shadow-glow backdrop-blur-xl sm:p-12"
+            aria-labelledby="cta-heading"
+          >
+            <h2 id="cta-heading" className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Ready to take control of your money?
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Join free and track salary, spending, and monthly balance with charts and category
+              breakdowns — set up in under a minute.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link to="/signup" onClick={() => trackCtaClick("signup", "bottom_cta")}>
+                <Button
+                  size="lg"
+                  className="h-12 min-w-[220px] bg-gradient-primary text-primary-foreground shadow-glow transition-smooth hover:opacity-90"
+                >
+                  Create free account <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/login" onClick={() => trackCtaClick("login", "bottom_cta")}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-12 min-w-[220px] border-border/80 bg-background/50 backdrop-blur-md"
+                >
+                  I already have an account
+                </Button>
+              </Link>
             </div>
           </section>
         </main>

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AppLogo } from "@/components/AppLogo";
+import { trackCtaClick } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 const AUTHOR = "Shravan Rasamalla";
@@ -34,10 +35,18 @@ export function SiteFooter({ className, compact = false }: Props) {
             <Link to="/" className="text-muted-foreground transition-smooth hover:text-foreground">
               Home
             </Link>
-            <Link to="/login" className="text-muted-foreground transition-smooth hover:text-foreground">
+            <Link
+              to="/login"
+              onClick={() => trackCtaClick("login", "footer")}
+              className="text-muted-foreground transition-smooth hover:text-foreground"
+            >
               Sign in
             </Link>
-            <Link to="/signup" className="text-muted-foreground transition-smooth hover:text-foreground">
+            <Link
+              to="/signup"
+              onClick={() => trackCtaClick("signup", "footer")}
+              className="text-muted-foreground transition-smooth hover:text-foreground"
+            >
               Register
             </Link>
           </nav>
