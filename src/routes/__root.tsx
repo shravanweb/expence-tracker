@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import { AppLogo } from "@/components/AppLogo";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -79,6 +80,7 @@ function RootComponent() {
     <ThemeProvider>
       <AuthProvider>
         <GoogleAnalytics />
+        <Analytics />
         <Outlet />
         <ThemedToaster />
       </AuthProvider>
