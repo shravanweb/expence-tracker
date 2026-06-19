@@ -6,6 +6,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider, useTheme } from "@/hooks/useTheme";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import { buildPageHead, SITE_NAME } from "@/lib/seo";
 import appCss from "../styles.css?url";
 
@@ -81,6 +82,7 @@ function RootComponent() {
       <AuthProvider>
         <GoogleAnalytics />
         <SpeedInsights />
+        <Analytics />
         <Outlet />
         <ThemedToaster />
       </AuthProvider>
