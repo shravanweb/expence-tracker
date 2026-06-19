@@ -5,13 +5,15 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider, useTheme } from "@/hooks/useTheme";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
-import { GoogleAdSense } from "@/components/GoogleAdSense";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import { buildPageHead, SITE_NAME } from "@/lib/seo";
 import appCss from "../styles.css?url";
 
 const themeInitScript = `(function(){try{var t=localStorage.getItem("Expense-tracker_theme");var d=t!=="light";document.documentElement.classList.toggle("dark",d);document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){document.documentElement.classList.add("dark");}})();`;
+
+const ADSENSE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || "ca-pub-6696519751206944";
 
 function NotFoundComponent() {
   return (
@@ -62,6 +64,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {ADSENSE_CLIENT_ID && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+            crossOrigin="anonymous"
+          />
+        )}
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
@@ -82,7 +91,6 @@ function RootComponent() {
     <ThemeProvider>
       <AuthProvider>
         <GoogleAnalytics />
-        <GoogleAdSense />
         <SpeedInsights />
         <Analytics />
         <Outlet />
