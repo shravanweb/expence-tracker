@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider, useTheme } from "@/hooks/useTheme";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { GoogleAdSense } from "@/components/GoogleAdSense";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import { buildPageHead, SITE_NAME } from "@/lib/seo";
@@ -81,6 +82,7 @@ function RootComponent() {
     <ThemeProvider>
       <AuthProvider>
         <GoogleAnalytics />
+        <GoogleAdSense />
         <SpeedInsights />
         <Analytics />
         <Outlet />
